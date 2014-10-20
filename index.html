@@ -118,7 +118,7 @@ $(document).ready(function(){
   
  //get reserve list
  $("#get_res").click(function(){
- r=syncAjax("index_json.php?cmd=5");
+ r=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=5");
  $('#list').text(r.busapp.number);
  var u="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=4";
  r=syncAjax(u);
