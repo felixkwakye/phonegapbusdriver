@@ -1,0 +1,245 @@
+<html>
+<head>
+<link rel="stylesheet" href='jquery.mobile-1.4.4.min.css'/>
+<script type="text/javascript" src="jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src='jquery.mobile-1.4.4.min.js'></script>
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script> 
+<script>
+
+ var geocoder;
+ 
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+} 
+//Get the latitude and the longitude;
+function successFunction(position) {
+    var lat = position.coords.latitude;
+    var lng = position.coords.longitude;
+    codeLatLng(lat, lng)
+}
+ 
+function errorFunction(){
+    alert("Geocoder failed");
+}
+ 
+  function initialize() {
+    geocoder = new google.maps.Geocoder();
+ 
+ 
+ 
+  }
+ 
+  function codeLatLng(lat, lng) {
+ 
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({'latLng': latlng}, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+      console.log(results)
+        if (results[1]) {
+         //formatted address
+         $('#location').text(results[0].formatted_address)
+        //find country name
+             for (var i=0; i<results[0].address_components.length; i++) {
+            for (var b=0;b<results[0].address_components[i].types.length;b++) {
+ 
+            //there are different types that might hold a city admin_area_lvl_1 usually does in come cases looking for sublocality type will be more appropriate
+                if (results[0].address_components[i].types[b] == "administrative_area_level_1") {
+                    //this is the object you are looking for
+                    city= results[0].address_components[i];
+                    break;
+                }
+            }
+        }
+        //city data
+        //$('#location').text(city.short_name + " " + city.long_name);
+ 
+ 
+        } else {
+          $('#location').text("No results found");
+        }
+      } else {
+        $('#location').text("Geocoder failed due to: " + status);
+      }
+    });
+  }
+
+
+
+			function syncAjax(u){
+			console.log(u);
+				var obj=$.ajax(
+					{url:u,
+					 async:false
+					 }
+				);
+				console.log(obj.responseText);
+				return $.parseJSON(obj.responseText);
+				
+			}
+	
+			
+$(document).ready(function(){
+//join function
+  $("#join").click(function(){
+    var a = parseInt($('#seats').text(), 10);
+	var l = document.getElementById('location').innerHTML;
+	if(a <= a && a > 0){
+    var diff = a-1;
+	$('#seats').text(diff);
+	var nop = parseInt($('#pass').text(), 10);
+	nop++;
+	var cos = nop*2;
+	$('#cost').text(cos);
+	$('#pass').text(nop);
+	var u ="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=3&id=1&s="+diff+"&l="+l;
+	return syncAjax(u);
+	}
+//left function	
+  });
+  $("#left").click(function(){
+	var b = parseInt($('#seats').text(),10);
+	var l = document.getElementById('location').innerHTML;
+	if(b < 35 && b >= 0) {
+	var sum = b+1;
+	$('#seats').text(sum);
+	var u ="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=3&id=1&s="+sum+"&l="+l;
+	return syncAjax(u);
+  }
+  });
+//reset function
+  $("#reset").click(function(){
+  	r=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=1&id=1");
+	d=syncAjax("http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=5");
+	var x =(r.busapp.default_seats)-(d.busapp.number);
+	$('#seats').text(x);
+	$('#pass').text('0');
+	$('#cost').text('0');
+  });
+  
+ //get reserve list
+ $("#get_res").click(function(){
+ r=syncAjax("index_json.php?cmd=5");
+ $('#list').text(r.busapp.number);
+ var u="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=4";
+ r=syncAjax(u);
+ for(var i=0;i<r.busapp.length;i++){
+ var names = r.busapp[i].name + " is at " + r.busapp[i].location;
+ $('<li>'+ names +'</li>').appendTo($('#flow'));
+ }
+});
+
+//view trip history
+$("#log").click(function(){
+var u="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=10";
+ r=syncAjax(u);
+ for(var i=0;i<r.busapp.length;i++){
+ var log = "Destination:"+r.busapp[i].trip_to + "   Number of passengers:" + r.busapp[i].passengers +"   Revenue(GHC):" + r.busapp[i].days_revenue + "   Date:"+ r.busapp[i].date+".";
+ $('<li>'+ log +'</li>').appendTo($('#list2'));
+ }
+});
+
+$("#done").click(function(){
+var pass = parseInt($('#pass').text(), 10);
+var cost = parseInt($('#cost').text(), 10);
+var u="http://50.63.128.135/~csashesi/class2015/felix-kwakye/jq/index_json.php?cmd=9&p="+pass+"&c="+cost;
+r=syncAjax(u);
+});
+
+});
+</script>
+</head>
+<body onload="initialize()">
+<script>
+function refresh(){
+document.location.reload(true);
+}
+</script>
+<!--DRIVER-->
+<div data-role="page" id="home">
+<div data-role="header">
+<div data-role="navbar">
+	<ul>	
+	<li><a	href="#home" data-transition="pop" data-icon="home">Home</a></li>
+		<h1 align="center">Tha Cartel Bus App</h1>
+	<li><a	href="#reserve" data-transition="pop" data-icon="carat-r">Reservations</a></li>
+</div>
+</div>
+
+<div role="main" class="ui-content" align="center"> 
+<p id='seats' style='font-size:500%'></p>
+<p id='location' style='font-size:100%'>Searching....</p>
+No of Passengers joined today:<p id='pass' style='font-size:100%'>0</p>
+Revenue for the day (GHC):<p id='cost' style='font-size:100%'>0</p>
+
+<div data-role="controlgroup" data-type="horizontal">
+<button onclick="initialize()" id="join" data-icon="plus">JOINED</button>
+<button onclick="initialize()" id="reset" data-icon="refresh">RESET</button>
+<button onclick="initialize()" id="left" data-icon="minus">LEFT</button>
+</div>
+</div>
+
+<div data-role="footer">
+<div data-role="navbar">
+<ul>
+<li id="done" onclick="refresh()"><a data-transition="pop" data-icon="refresh">Done For Today!!!</a></li>
+<h1 align="center">Developed By:Tha Cartel</h1>
+<li id="log"><a href="#trip" data-transition="pop" data-icon="grid">Trip Log</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!--RESERVATIONS-->
+<div data-role="page" id="reserve">
+<div data-role="header">
+<div data-role="navbar">
+	<ul>	
+	<li><a	href="#home" data-transition="pop" data-icon="home">Home</a></li>
+	<h1 align="center">Tha Cartel Bus App</h1>
+	<li><a	href="#reserve" data-transition="pop" data-icon="carat-r">Reservations</a></li>
+	</ul>
+</div>
+</div>
+
+
+<div role="main" class="ui-content" align="center">
+<button id="get_res">Get Reserved List</button>
+<div id="list" style="font-size:500%">
+0
+</div>
+<ul id="flow">
+
+</ul>
+</div>
+
+<div data-role="footer">
+<h1>Developed By: Tha Cartel</h1>
+</div>
+</div>
+
+<!--TRIP-->
+
+<div data-role="page" id="trip">
+<div data-role="header">
+<div data-role="navbar">
+	<ul>	
+	<li><a	href="#home" data-transition="pop" data-icon="home">Home</a></li>
+	<h1 align="center">Tha Cartel Bus App</h1>
+	<li><a	href="#reserve" data-transition="pop" data-icon="carat-r">Reservations</a></li>
+	</ul>
+</div>
+</div>
+
+
+<div role="main" class="ui-content" align="center">
+<button>View Log</button>
+<ul id="list2">
+</ul>
+</div>
+
+<div data-role="footer">
+<h1>Developed By: Tha Cartel</h1>
+</div>
+</div>
+</body>
+</html>
